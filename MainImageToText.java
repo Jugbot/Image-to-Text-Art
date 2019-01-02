@@ -5,11 +5,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -18,13 +16,21 @@ import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+
+/**
+ * WARNING: This program was made in highschool with only a mild sense of optimization, algorithms, and organization.
+ * Basically it is legacy code ;)
+ * @author lucas
+ *
+ */
+
 public class MainImageToText {
 
 	public static void main(String[] args) {
-		CharDictionary cd = new CharDictionary(new Font("Times New Roman", 1, 20));
+		CharDictionary cd = new CharDictionary(new Font("Courier New", 1, 20));
 		JFileChooser chooser = new JFileChooser();
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Images", "png");
-		chooser.setFileFilter(filter);
+		/*FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG Images", "png");
+		chooser.setFileFilter(filter);*/
 		chooser.setCurrentDirectory(new File(System.getProperty("user.home"), "Desktop"));
 		int returnVal = chooser.showOpenDialog(null);
 		File f = chooser.getSelectedFile();
@@ -108,9 +114,19 @@ class CharDictionary {
 	}
 
 	public void createDictionary() {
-		for (int i = 33; i <= 126; i++) { //33 126
-
-			dictionary.add(new letter((char) i, getValue((char) i)));
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+		Color fntC = new Color(255, 255, 255);
+		Graphics2D g = img.createGraphics();
+		g.setFont(f);
+		FontMetrics fm = g.getFontMetrics();
+		dictionary.add(new letter(' ', getValue(' ')));
+		for (int i = '─'; i <= 'Ɀ'/*32-126*/; i++) { //33 126
+			if (fm.charWidth((char)i) == fm.charWidth('▓'))
+				dictionary.add(new letter((char) i, getValue((char) i)));
+		}
+		for (int i = ' '; i <= '~'/*32-126*/; i++) { //33 126
+			if (fm.charWidth((char)i) == fm.charWidth('▓'))
+				dictionary.add(new letter((char) i, getValue((char) i)));
 		}
 		sort();
 	}
@@ -121,7 +137,7 @@ class CharDictionary {
 
 	public void debugPrintDictionary() {
 		for (int i = 0; i < dictionary.size(); i++) {
-			System.out.println("Char: " + dictionary.get(i).c + " Valueeeee: " + dictionary.get(i).val);
+			System.out.println("Char: " + dictionary.get(i).c + " Value: " + dictionary.get(i).val);
 		}
 	}
 
@@ -146,8 +162,8 @@ class CharDictionary {
 
 		FontMetrics fm = g.getFontMetrics();
 
-		int width = fm.charWidth(c);
-		int height = fm.getAscent(); // too big
+		int width = fm.charWidth('W');
+		int height = fm.getAscent() + fm.getDescent(); // too big
 
 		img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		g = img.createGraphics();
@@ -156,7 +172,7 @@ class CharDictionary {
 		g.setFont(f);
 
 		// g.fill
-		g.drawString(c + "", 0, (fm.getAscent() + (height - (fm.getAscent() + fm.getDescent())) / 2));
+		g.drawString(c + "", 0, fm.getAscent());
 
 		int w = img.getWidth();
 		int h = img.getHeight();
@@ -172,17 +188,18 @@ class CharDictionary {
 
 			}
 		}
-
+		
 		finalAverage /= w * h;
-
-		try {
-			File desktop = new File(System.getProperty("user.home"), "Desktop");
-			File outputfile = new File(desktop.toString() + "\\letters\\" + (int) c + ".png");
-			ImageIO.write(img, "png", outputfile);
-		} catch (IOException e) {
-
-		}
-
+		
+		// DEBUG png files for viewing
+//		try {
+//			File desktop = new File(System.getProperty("user.home"), "Desktop");
+//			File outputfile = new File(desktop.toString() + "\\letters\\" + finalAverage + ".png");
+//			ImageIO.write(img, "png", outputfile);
+//		} catch (IOException e) {
+//			
+//		}
+		
 		return finalAverage;
 	}
 }
